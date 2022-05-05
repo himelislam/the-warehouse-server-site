@@ -19,6 +19,7 @@ async function run(){
     try{
         await client.connect();
         const productCollection = client.db('theWarehouse').collection('products');
+        const selectedProductCollection = client.db('theWarehouse').collection('selectedProducts');
 
         // get all products
         // http://localhost:5000/products
@@ -50,7 +51,7 @@ async function run(){
             const id = req.params.id;
             const quantity = req.body.quantity;
             const newQuantity = quantity - 1;
-            console.log(quantity);
+            console.log(newQuantity);
             const filter = {_id: ObjectId(id)};
             const options = {upsert : true}
             const updateDoc = {
@@ -59,6 +60,29 @@ async function run(){
                 },
             }
             const result = await productCollection.updateOne(filter,updateDoc,options)
+            res.send(result)
+        })
+
+        // restock a product
+        app.patch('/product/restock/:id', async(req, res) => {
+            const id = req.params.id;
+            const newQuantity = req.body.newQuantity;
+            console.log(newQuantity);
+            const filter = {_id: ObjectId(id)};
+            const options = {upsert : true}
+            const updateDoc = {
+                $set : {
+                    quantity : newQuantity
+                },
+            }
+            const result = await productCollection.updateOne(filter,updateDoc,options)
+            res.send(result)
+        })
+
+        // post a new product 
+        app.post('/myItems', async(req, res) =>{
+            const product = req.body;
+            const result = await selectedProductCollection.insertOne(product);
             res.send(result)
         })
     }
