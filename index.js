@@ -19,7 +19,7 @@ async function run(){
     try{
         await client.connect();
         const productCollection = client.db('theWarehouse').collection('products');
-        const selectedProductCollection = client.db('theWarehouse').collection('selectedProducts');
+        // const selectedProductCollection = client.db('theWarehouse').collection('selectedProducts');
 
         // get all products
         // http://localhost:5000/products
@@ -82,8 +82,18 @@ async function run(){
         // post a new product 
         app.post('/myItems', async(req, res) =>{
             const product = req.body;
-            const result = await selectedProductCollection.insertOne(product);
+            const result = await productCollection.insertOne(product);
             res.send(result)
+        })
+
+        // get the selected products my items
+        app.get('/myItems', async (req, res) =>{
+            const email = req.query.email;
+            const query = {email : email}
+            const cursor = productCollection.find(query)
+            const products = await cursor.toArray();
+            res.send(products)
+
         })
     }
     finally{
